@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị | 4WARDS Audio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    colors: {
+                        daw: {
+                            900: '#0a0a0a',
+                            800: '#151515',
+                            700: '#262626',
+                            600: '#404040',
+                            accent: '#00e5ff', // Cyan neon
+                            success: '#00ff88',
+                            warning: '#ff2a2a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+        }
+
+        /* Form Inputs */
+        input, select, textarea {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+            border-color: #00e5ff !important;
+        }
+
+        /* Custom File Input */
+        input[type="file"]::file-selector-button {
+            background-color: #262626;
+            color: #00e5ff;
+            border: 1px solid #404040;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            margin-right: 1rem;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #404040;
+            border-color: #00e5ff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #404040; }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
+    </style>
+</head>
+<body class="antialiased selection:bg-daw-accent selection:text-daw-900 h-screen overflow-hidden flex flex-col">
+
+    <div id="login-view" class="absolute inset-0 z-50 bg-daw-900 flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="w-full max-w-md bg-daw-800 border border-daw-700 rounded-lg shadow-2xl p-8 relative overflow-hidden">
+            <!-- Decorative line -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-daw-900 via-daw-accent to-daw-900"></div>
+            
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold tracking-widest text-white mb-2">4WARDS<span class="text-daw-accent">.</span></h1>
+                <p class="font-mono text-xs text-gray-400 uppercase tracking-widest">Hệ thống quản trị (Admin)</p>
+            </div>
+
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Email đăng nhập</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                        <input type="email" value="admin@4wards.com" required class="w-full bg-daw-900 border border-daw-700 rounded p-3 pl-10 text-white font-mono text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Mật khẩu</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                        <input type="password" value="password123" required class="w-full bg-daw-900 border border-daw-700 rounded p-3 pl-10 text-white font-mono text-sm">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-daw-accent text-daw-900 font-bold py-3 px-4 rounded hover:bg-cyan-300 transition-colors uppercase tracking-wider text-sm flex justify-center items-center gap-2 mt-4">
+                    <i class="fas fa-sign-in-alt"></i> Truy cập hệ thống
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-view" class="hidden h-full flex flex-col sm:flex-row w-full">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full sm:w-64 bg-daw-800 border-r border-daw-700 flex-shrink-0 flex flex-col">
+            <div class="h-16 flex items-center px-6 border-b border-daw-700 bg-daw-900">
+                <h1 class="text-xl font-bold tracking-widest text-white">4WARDS<span class="text-daw-accent">.</span></h1>
+            </div>
+            
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                <button onclick="switchTab('profile')" id="nav-profile" class="w-full flex items-center gap-3 px-4 py-3 rounded bg-daw-700 text-daw-accent font-mono text-sm transition-colors border border-daw-600">
+                    <i class="fas fa-id-card w-5"></i> Thông tin chung
+                </button>
+                <button onclick="switchTab('audio')" id="nav-audio" class="w-full flex items-center gap-3 px-4 py-3 rounded hover:bg-daw-700 text-gray-400 hover:text-white font-mono text-sm transition-colors border border-transparent">
+                    <i class="fas fa-sliders-h w-5"></i> Quản lý Demo
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-daw-700">
+                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded border border-daw-700 text-gray-400 hover:text-daw-warning hover:border-daw-warning transition-colors font-mono text-xs uppercase">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 bg-daw-900 overflow-y-auto relative p-4 sm:p-8">
+            
+            <!-- Tab: Profile Settings -->
+            <div id="tab-profile" class="max-w-3xl mx-auto space-y-6">
+                <div class="border-b border-daw-700 pb-4 mb-8">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fas fa-user-edit text-daw-accent"></i> Cập nhật Thông tin & Liên hệ
+                    </h2>
+                    <p class="text-gray-400 font-mono text-sm mt-1">Quản lý chức danh và thông tin hiển thị trên trang chủ.</p>
+                </div>
+
+                <form id="profile-form" class="space-y-6 bg-daw-800 p-6 rounded-lg border border-daw-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Tên hiển thị</label>
+                            <input type="text" value="Trần Trọng Sinh" class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Chức danh chuyên môn</label>
+                            <input type="text" value="Audio Engineer & Sound Designer" class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Email công việc</label>
+                            <input type="email" value="contact@4wards.com" class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Số điện thoại</label>
+                            <input type="tel" value="+84 123 456 789" class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Tiểu sử / Giới thiệu</label>
+                        <textarea rows="4" class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">Professional Audio Engineer & Sound Designer specializing in pristine mixes, immersive game audio, and captivating original compositions.</textarea>
+                    </div>
+
+                    <div class="flex justify-end pt-4 border-t border-daw-700">
+                        <button type="submit" class="bg-daw-accent text-daw-900 font-bold py-2 px-6 rounded hover:bg-cyan-300 transition-colors uppercase tracking-wider text-sm flex items-center gap-2">
+                            <i class="fas fa-save"></i> Lưu Thay Đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab: Audio Management -->
+            <div id="tab-audio" class="hidden max-w-5xl mx-auto space-y-6">
+                <div class="border-b border-daw-700 pb-4 mb-8 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <i class="fas fa-waveform text-daw-accent"></i> Quản lý Demo & Dự án
+                        </h2>
+                        <p class="text-gray-400 font-mono text-sm mt-1">Tải lên file định dạng cao nhất để đảm bảo chất lượng showreel.</p>
+                    </div>
+                </div>
+
+                <!-- Upload Form -->
+                <div class="bg-daw-800 p-6 rounded-lg border border-daw-accent relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-daw-accent text-daw-900 text-xs font-bold px-3 py-1 rounded-bl-lg">UPLOAD MỚI</div>
+                    
+                    <form id="audio-form" class="space-y-6 mt-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Tên Dự Án / Track</label>
+                                <input type="text" placeholder="VD: Cyberpunk UI Sound Design" required class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-mono text-gray-400 mb-2 uppercase">Phân loại (Chuyên môn)</label>
+                                <select required class="w-full bg-daw-900 border border-daw-700 rounded p-3 text-white font-sans appearance-none">
+                                    <option value="mixing">Mix & Master</option>
+                                    <option value="game">Game Sound Design</option>
+                                    <option value="vocal">Vocal Post-Production</option>
+                                    <option value="originals">Original Compositions</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-daw-900 border border-dashed border-daw-600 rounded-lg p-6 text-center hover:border-daw-accent transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-daw-600 mb-3"></i>
+                            <label class="block text-sm font-bold text-white mb-1">Tải lên File Audio</label>
+                            
+                            <!-- Crucial quality notice per request -->
+                            <div class="inline-block bg-daw-800 border border-daw-700 text-daw-accent text-xs font-mono px-3 py-2 rounded mb-4 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i> Yêu cầu bắt buộc: <strong>WAV (48kHz, 32-bit float)</strong> để đạt chất lượng tốt nhất.
+                            </div>
+                            
+                            <div class="flex justify-center items-center">
+                                <input type="file" accept=".wav,.mp3,.aif" required class="text-sm text-gray-400 w-full max-w-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-daw-700 file:text-white hover:file:bg-daw-600 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-daw-accent text-daw-900 font-bold py-2 px-6 rounded hover:bg-cyan-300 transition-colors uppercase tracking-wider text-sm flex items-center gap-2">
+                                <i class="fas fa-upload"></i> Đăng tải Track
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Tracks List -->
+                <div class="mt-10">
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-daw-700 pb-2">Danh sách Track đang hiển thị</h3>
+                    
+                    <div class="space-y-3">
+                        <!-- Mock Track Item -->
+                        <div class="flex items-center justify-between p-4 bg-daw-800 border border-daw-700 rounded hover:border-daw-600 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded bg-daw-900 flex items-center justify-center text-daw-accent">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Neon Nights (Stem Master)</h4>
+                                    <p class="text-xs font-mono text-gray-400">Mix & Master • WAV 48kHz 32-bit</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="p-2 text-gray-400 hover:text-daw-accent transition-colors"><i class="fas fa-edit"></i></button>
+                                <button class="p-2 text-gray-400 hover:text-daw-warning transition-colors"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Mock Track Item -->
+                        <div class="flex items-center justify-between p-4 bg-daw-800 border border-daw-700 rounded hover:border-daw-600 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded bg-daw-900 flex items-center justify-center text-daw-accent">
+                                    <i class="fas fa-gamepad"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Cyberpunk UI & Foley</h4>
+                                    <p class="text-xs font-mono text-gray-400">Game Sound Design • WAV 48kHz 32-bit</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="p-2 text-gray-400 hover:text-daw-accent transition-colors"><i class="fas fa-edit"></i></button>
+                                <button class="p-2 text-gray-400 hover:text-daw-warning transition-colors"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // Elements
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const loginForm = document.getElementById('login-form');
+        const profileForm = document.getElementById('profile-form');
+        const audioForm = document.getElementById('audio-form');
+
+        // Login Handler
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+
+            // Simulate API Call
+            setTimeout(() => {
+                loginView.classList.add('opacity-0');
+                setTimeout(() => {
+                    loginView.classList.add('hidden');
+                    dashboardView.classList.remove('hidden');
+                    showToast('Đăng nhập thành công!', 'success');
+                }, 500);
+            }, 1000);
+        });
+
+        // Logout Handler
+        function logout() {
+            showToast('Đang đăng xuất...', 'normal');
+            setTimeout(() => {
+                dashboardView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                loginView.classList.remove('opacity-0');
+                
+                // Reset login button
+                const btn = loginForm.querySelector('button');
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Truy cập hệ thống';
+                btn.disabled = false;
+            }, 800);
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('tab-profile').classList.add('hidden');
+            document.getElementById('tab-audio').classList.add('hidden');
+            
+            // Reset Nav Styles
+            const navs = ['nav-profile', 'nav-audio'];
+            navs.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('bg-daw-700', 'text-daw-accent', 'border-daw-600');
+                el.classList.add('text-gray-400', 'border-transparent');
+            });
+
+            // Show selected tab & style nav
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            activeNav.classList.remove('text-gray-400', 'border-transparent');
+            activeNav.classList.add('bg-daw-700', 'text-daw-accent', 'border-daw-600');
+        }
+
+        // Form Submit Handlers (Simulate Saving)
+        profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            simulateSave(btn, 'Đã cập nhật thông tin liên hệ thành công!');
+        });
+
+        audioForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            simulateSave(btn, 'Track mới đã được tải lên và xử lý ở 48kHz/32-bit float!');
+            setTimeout(() => audioForm.reset(), 1500);
+        });
+
+        function simulateSave(buttonElement, successMessage) {
+            const originalHTML = buttonElement.innerHTML;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            buttonElement.disabled = true;
+            buttonElement.classList.add('opacity-75');
+
+            setTimeout(() => {
+                buttonElement.innerHTML = originalHTML;
+                buttonElement.disabled = false;
+                buttonElement.classList.remove('opacity-75');
+                showToast(successMessage, 'success');
+            }, 1200);
+        }
+
+        // Custom Toast Notification System
+        function showToast(message, type = 'normal') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-daw-800';
+            let borderClass = 'border-daw-700';
+            let icon = '<i class="fas fa-info-circle text-daw-accent"></i>';
+            
+            if (type === 'success') {
+                borderClass = 'border-daw-success';
+                icon = '<i class="fas fa-check-circle text-daw-success"></i>';
+            } else if (type === 'warning') {
+                borderClass = 'border-daw-warning';
+                icon = '<i class="fas fa-exclamation-triangle text-daw-warning"></i>';
+            }
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-lg border ${bgClass} ${borderClass} text-white text-sm font-mono toast-enter`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(() => toast.remove(), 300); // Wait for exit animation
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
